@@ -37,10 +37,9 @@ public class BookmarksListAdapter extends ArrayAdapter<Feed> {
 
 	}
 
-	public View getView(final int position, View convertView, ViewGroup parent) {
+	public View getView(final int position, View v, ViewGroup parent) {
 
-		// assign the view we are converting to a local variable
-		View v = convertView;
+		ViewHolder holder;
 
 		bookCarSavedData = getContext()
 				.getSharedPreferences(
@@ -52,25 +51,30 @@ public class BookmarksListAdapter extends ArrayAdapter<Feed> {
 
 		editor = bookCarSavedData.edit();
 
-		// first check to see if the view is null. if so, we have to inflate it.
-		// to inflate it basically means to render, or show, the view.
 		if (v == null) {
 			LayoutInflater inflater = (LayoutInflater) getContext()
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			v = inflater.inflate(R.layout.bookmarks_list_item, null);
+			holder = new ViewHolder();
+
+			holder.feedTitle = (TextView) v.findViewById(R.id.feedTitle);
+
+			holder.cancel = (ImageView) v.findViewById(R.id.cancel);
+
+			v.setTag(holder);
+
+		} else {
+
+			holder = (ViewHolder) v.getTag();
 		}
 
 		Feed i = objects.get(position);
 
 		if (i != null) {
 
-			TextView feedTitle = (TextView) v.findViewById(R.id.feedTitle);
+			holder.feedTitle.setText(i.getFeedTitle());
 
-			ImageView cancel = (ImageView) v.findViewById(R.id.cancel);
-
-			feedTitle.setText(i.getFeedTitle());
-
-			cancel.setOnClickListener(new OnClickListener() {
+			holder.cancel.setOnClickListener(new OnClickListener() {
 
 				@Override
 				public void onClick(View v) {
@@ -92,8 +96,15 @@ public class BookmarksListAdapter extends ArrayAdapter<Feed> {
 			});
 		}
 
-		// the view must be returned to our activity
 		return v;
+
+	}
+
+	static class ViewHolder {
+
+		TextView feedTitle;
+
+		ImageView cancel;
 
 	}
 }

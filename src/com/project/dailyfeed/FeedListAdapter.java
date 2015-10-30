@@ -27,76 +27,68 @@ public class FeedListAdapter extends ArrayAdapter<Feed> {
 		this.objects = objects;
 	}
 
-	public View getView(int position, View convertView, ViewGroup parent) {
+	public View getView(int position, View v, ViewGroup parent) {
 
-		// assign the view we are converting to a local variable
-		View v = convertView;
+		ViewHolder holder;
 
-		// first check to see if the view is null. if so, we have to inflate it.
-		// to inflate it basically means to render, or show, the view.
 		if (v == null) {
 			LayoutInflater inflater = (LayoutInflater) getContext()
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			v = inflater.inflate(R.layout.feed_list_item, null);
+
+			holder = new ViewHolder();
+
+			holder.feedTitle = (TextView) v.findViewById(R.id.feedTitle);
+			holder.feedImage = (ImageView) v.findViewById(R.id.feedImage);
+
+			v.setTag(holder);
+
+		} else {
+
+			holder = (ViewHolder) v.getTag();
 		}
 
-		/*
-		 * Recall that the variable position is sent in as an argument to this
-		 * method. The variable simply refers to the position of the current
-		 * object in the list. (The ArrayAdapter iterates through the list we
-		 * sent it)
-		 * 
-		 * Therefore, i refers to the current Item object.
-		 */
 		Feed i = objects.get(position);
 
 		if (i != null) {
 
-			// This is how you obtain a reference to the TextViews.
-			// These TextViews are created in the XML files we defined.
+			holder.feedTitle.setText(i.getFeedTitle());
 
-			TextView feedTitle = (TextView) v.findViewById(R.id.feedTitle);
-			ImageView feedImage = (ImageView) v.findViewById(R.id.feedImage);
+			Bitmap bitmap = i.getBitmap();
 
-			// check to see if each individual textview is null.
-			// if not, assign some text!
-			if (feedTitle != null) {
-				feedTitle.setText(i.getFeedTitle());
+			if (bitmap == null) {
+
+				Log.d("FeedListAdapter",
+						"Trying Get from cache image " + i.getFeedId());
+
+				bitmap = ci.getBitmapFromMemCache(i.getFeedId() + "");
+
+				i.setBitmap(bitmap);
+				notifyDataSetChanged();
+
 			}
+			if (bitmap != null) {
 
-			if (feedImage != null) {
+				holder.feedImage.setImageBitmap(bitmap);
 
-				Bitmap bitmap = i.getBitmap();
+			} else {
 
-				if (bitmap == null) {
+				Log.d("FeedListAdapter", "Download Image " + i.getFeedId());
 
-					Log.d("FeedListAdapter",
-							"Trying Get from cache image " + i.getFeedId());
+				imagedownloader.download(i.getFeedImage(), holder.feedImage,
+						i.getFeedId() + "");
 
-					bitmap = ci.getBitmapFromMemCache(i.getFeedId() + "");
-
-					i.setBitmap(bitmap);
-					notifyDataSetChanged();
-
-				}
-				if (bitmap != null) {
-
-					feedImage.setImageBitmap(bitmap);
-
-				} else {
-
-					Log.d("FeedListAdapter", "Download Image " + i.getFeedId());
-
-					imagedownloader.download( i.getFeedImage(),
-							feedImage, i.getFeedId() + "");
-
-				}
 			}
-
 		}
 
-		// the view must be returned to our activity
 		return v;
+
+	}
+
+	static class ViewHolder {
+
+		TextView feedTitle;
+		ImageView feedImage;
 
 	}
 
